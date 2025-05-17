@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Contact Form</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 450px;
+      width: 100%;
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: 1.8px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 40px;
+    }
+
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    input[type="email"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #007BFF;
+      box-shadow: 0 0 8px rgba(0,123,255,0.3);
+    }
+
+    textarea {
+      min-height: 80px;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease;
+      font-family: inherit;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Contact Form</h2>
+    <form id="myForm" autocomplete="off" novalidate>
+      <label for="full_name">Full Name <small>(2-50 letters only)</small></label>
+      <input
+        type="text"
+        id="full_name"
+        name="full_name"
+        required
+        minlength="2"
+        maxlength="50"
+        pattern="^[a-zA-Z\s'-]+$"
+        placeholder="Your full name"
+      />
+
+      <label for="phone_number">Phone Number <small>(10-15 digits)</small></label>
+      <input
+        type="tel"
+        id="phone_number"
+        name="phone_number"
+        required
+        pattern="^\d{10,15}$"
+        placeholder="Digits only, e.g. 1234567890"
+      />
+
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        placeholder="example@domain.com"
+      />
+
+      <label for="company_name">Company Name <small>(optional)</small></label>
+      <input
+        type="text"
+        id="company_name"
+        name="company_name"
+        maxlength="100"
+        pattern="^[a-zA-Z0-9\s&.,'-]*$"
+        placeholder="Your company name"
+      />
+
+      <label for="query">Query</label>
+      <textarea
+        id="query"
+        name="query"
+        required
+        minlength="10"
+        maxlength="500"
+        placeholder="Please enter your query (min 10 characters)"
+      ></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('myForm');
+
+    function validateInput(field, errorMsg) {
+      if (!field.checkValidity()) {
+        alert(errorMsg);
+        field.focus();
+        return false;
+      }
+      return true;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Custom validation with descriptive messages:
+      if (!validateInput(form.full_name, 'Please enter a valid full name (2-50 letters, spaces, hyphens allowed).')) return;
+      if (!validateInput(form.phone_number, 'Please enter a valid phone number with 10-15 digits only.')) return;
+      if (!validateInput(form.email, 'Please enter a valid email address.')) return;
+
+      // Company name is optional but if filled, check pattern
+      if (form.company_name.value.trim() !== '' &&
+          !form.company_name.checkValidity()) {
+        alert('Please enter a valid company name (letters, numbers, spaces, & . , \' - allowed).');
+        form.company_name.focus();
+        return;
+      }
+
+      if (!validateInput(form.query, 'Please enter your query (at least 10 characters).')) return;
+
+      // Prepare data (trim whitespace)
+      const data = {
+        full_name: form.full_name.value.trim(),
+        phone_number: form.phone_number.value.trim(),
+        email: form.email.value.trim(),
+        company_name: form.company_name.value.trim(),
+        query: form.query.value.trim(),
+      };
+
+      // Replace with your actual n8n webhook URL
+      const webhookUrl = "http://localhost:5678/webhook-test/form";
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          alert('Form submitted successfully!');
+          form.reset();
+        } else {
+          alert('Failed to submit the form. Please try again later.');
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
